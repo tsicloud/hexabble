@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hexabble — Scorekeeper & Rules</title>
+  <style>
+    :root {
+      --text: #111;
+      --muted: #444;
+      --rule: #ddd;
+      --card: #fff;
+      --bg: #f6f6f6;
+      --accent: #0b5fff;
+      --danger: #c81e1e;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 980px;
+      margin: 20px auto;
+      padding: 0 14px;
+    }
+
+    header {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 18px 16px 14px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      letter-spacing: .2px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      margin-top: 12px;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+
+    section {
+      padding: 14px 0;
+      border-top: 1px solid var(--rule);
+    }
+    section:first-of-type { border-top: none; padding-top: 6px; }
+
+    h2 { margin: 0 0 8px; font-size: 18px; }
+    p { margin: 0 0 10px; }
+
+    ul, ol { margin: 0; padding-left: 18px; }
+    li { margin: 6px 0; }
+
+    .note {
+      border-left: 4px solid var(--accent);
+      background: #eef4ff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: #0d2b6b;
+    }
+
+    .small { color: var(--muted); font-size: 13px; }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    /* ---------- Scorekeeper (mobile-first) ---------- */
+    .scorekeeper {
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .score-head {
+      display: grid;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .score-title {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .score-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 520px) {
+      .score-head {
+        grid-template-columns: 1fr auto;
+        justify-content: space-between;
+      }
+      .score-actions {
+        grid-template-columns: repeat(3, auto);
+        justify-content: end;
+      }
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--rule);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .btn:hover { border-color: #bbb; }
+    .btn:active { transform: translateY(1px); }
+
+    .btn-danger {
+      border-color: rgba(200,30,30,.25);
+      color: var(--danger);
+    }
+    .btn-danger:hover { border-color: rgba(200,30,30,.5); }
+
+    .btn-ghost {
+      background: #fafafa;
+    }
+
+    /* Player cards: 1 col on phones, 2 on small tablets, 3/4 on larger */
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 520px) {
+      .score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 860px) {
+      .score-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1100px) {
+      .score-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .player {
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      min-width: 0;
+    }
+
+    .player-name {
+      width: 100%;
+      font-size: 15px;
+      padding: 10px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+    }
+
+    .total {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      margin: 10px 0 12px;
+    }
+
+    .delta-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .delta {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+    }
+
+    .delta-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 520px) {
+      .delta-row { grid-template-columns: 1fr auto; }
+      .delta-actions { grid-template-columns: auto auto; }
+      .btn { padding: 9px 12px; }
+    }
+
+    .history {
+      margin-top: 10px;
+      border-top: 1px solid var(--rule);
+      padding-top: 10px;
+      max-height: 160px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 0;
+      border-bottom: 1px dashed #eee;
+      white-space: nowrap;
+    }
+    .history-item:last-child { border-bottom: none; }
+
+    footer {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Print */
+    @media print {
+      body { background: #fff; }
+      .page { margin: 0; max-width: none; padding: 0; }
+      header, main { border: none; box-shadow: none; border-radius: 0; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <h1>Hexabble</h1>
+      <p class="subtitle">Scorekeeper + rules (scores are stored only in memory until you close the page)</p>
+
+      <!-- Scorekeeper UI -->
+      <div class="scorekeeper" style="margin-top: 14px;">
+        <div class="score-head">
+          <div class="score-title">Scorekeeper</div>
+          <div class="score-actions">
+            <button class="btn" type="button" id="addPlayerBtn">Add player</button>
+            <button class="btn btn-ghost" type="button" id="removePlayerBtn">Remove last</button>
+            <button class="btn btn-danger" type="button" id="resetBtn">Clear scores</button>
+          </div>
+        </div>
+
+        <div class="score-grid" id="players"></div>
+
+        <div class="small" style="margin-top: 10px;">
+          Enter a score change (e.g., <code>24</code>, <code>+24</code>, <code>-10</code>) then tap <strong>Add</strong>.
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <!-- Simple header graphic: hex board + 6 directions -->
+        <svg width="100%" viewBox="0 0 900 180" role="img" aria-label="Hex board graphic" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#111" />
+            </marker>
+          </defs>
+
+          <g transform="translate(120,18)">
+            <g fill="#fff" stroke="#111" stroke-width="2">
+              <polygon points="70,12 110,35 110,80 70,103 30,80 30,35" />
+              <polygon points="150,12 190,35 190,80 150,103 110,80 110,35" />
+              <polygon points="110,80 150,103 150,148 110,171 70,148 70,103" />
+              <polygon points="30,80 70,103 70,148 30,171 -10,148 -10,103" />
+              <polygon points="-10,35 30,58 30,103 -10,126 -50,103 -50,58" />
+              <polygon points="110,35 150,58 150,103 110,126 70,103 70,58" />
+            </g>
+            <circle cx="70" cy="80" r="5" fill="#111" />
+          </g>
+
+          <g stroke="#111" stroke-width="2" fill="none" marker-end="url(#arrow)" transform="translate(420,90)">
+            <line x1="0" y1="0" x2="140" y2="0" />
+            <line x1="0" y1="0" x2="70" y2="-80" />
+            <line x1="0" y1="0" x2="-70" y2="-80" />
+            <line x1="0" y1="0" x2="-140" y2="0" />
+            <line x1="0" y1="0" x2="-70" y2="80" />
+            <line x1="0" y1="0" x2="70" y2="80" />
+          </g>
+
+          <g transform="translate(710,36)">
+            <rect x="0" y="0" width="150" height="110" rx="14" fill="#fff" stroke="#111" stroke-width="2" />
+            <text x="75" y="62" text-anchor="middle" font-size="44" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">A</text>
+            <text x="128" y="96" text-anchor="end" font-size="16" fill="#444" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">1</text>
+          </g>
+
+          <text x="420" y="168" text-anchor="middle" font-size="12" fill="#444" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">
+            Words can run in six straight directions on a hex grid.
+          </text>
+        </svg>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <h2>Objective</h2>
+        <p>Score the most points by forming valid words on the hexagonal board using your tiles and the multiplier spaces.</p>
+      </section>
+
+      <section>
+        <h2>Included Items</h2>
+        <ul>
+          <li><strong>Hexagonal game board</strong> (17-tile diameter) with multiplier spaces: <strong>DL</strong>, <strong>TL</strong>, <strong>DW</strong>, <strong>TW</strong>.</li>
+          <li><strong>4 tile holders</strong> (7 spaces each).</li>
+          <li><strong>108 tiles total</strong>:
+            <ul>
+              <li><strong>98 letter tiles</strong> (standard Scrabble letter distribution).</li>
+              <li><strong>4 Wild tiles</strong> (act as any letter, 0 points).</li>
+              <li><strong>2 Key tiles</strong> (unlock starting spaces or act as Wild if no Key locations are available, 0 points).</li>
+              <li><strong>4 Pivot tiles</strong> (change word direction mid-play, 0 points).</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Setup</h2>
+        <ol>
+          <li>Mix all tiles in the bag.</li>
+          <li>Each player draws <strong>7</strong> tiles.</li>
+          <li>Choose a starting player.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Playable Directions</h2>
+        <p>All words must be placed in one of these three directions (and be readable in that direction):</p>
+        <ul>
+          <li><strong>Up-right 60°</strong></li>
+          <li><strong>Down-right 60°</strong></li>
+          <li><strong>Direct down</strong></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Starting & Placing Words</h2>
+        <ul>
+          <li>Players take turns forming words, starting from any <strong>central starting space</strong> or an <strong>unlocked Key location</strong>.</li>
+          <li>On your turn, place one connected word (with optional additional words formed by adjacency) and then draw back up to 7 tiles.</li>
+        </ul>
+
+        <h3 style="margin: 12px 0 6px; font-size: 15px;">Starting from the middle of an existing word</h3>
+        <p>If you start a new word from the middle of an existing word, your new word must run <strong>adjacent</strong> to the existing word (not parallel) unless every parallel letter placed forms a valid word.</p>
+
+        <h3 style="margin: 12px 0 6px; font-size: 15px;">Adjacent Letters Rule</h3>
+        <p>When placing a new word “sideways” and its starting letter touches <strong>two</strong> letters from an existing word:</p>
+        <ul>
+          <li>The second (non-word-forming) letter is ignored unless it forms a valid two-letter word.</li>
+          <li>Words may pass through existing words, but any additional adjacencies must form valid words or the placement is not allowed.</li>
+        </ul>
+
+        <h3 style="margin: 12px 0 6px; font-size: 15px;">Three-tile adjacency rule</h3>
+        <p>You may not place a tile adjacent to <strong>three</strong> tiles unless it forms at least <strong>two</strong> words: the main word being created and a valid word with one of the other adjacent letters.</p>
+      </section>
+
+      <section>
+        <h2>Special Tiles</h2>
+        <ul>
+          <li><strong>Wild</strong>: functions as any letter, worth <strong>0 points</strong> (tile is labeled “WILD”).</li>
+          <li><strong>Key</strong>: unlocks additional starting spaces (Key symbols on the board). Key symbols work like the initial start location. If no Key locations are available, a Key tile may be played as a Wild. Worth <strong>0 points</strong>.</li>
+          <li><strong>Pivot</strong>: allows the word you are placing to <strong>change direction</strong> to any playable direction. Worth <strong>0 points</strong>. After placement, it creates a <strong>voided space</strong> that cannot be played on or from later. Pivot tiles do not block a parallel word from running beside them.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Scoring</h2>
+        <ol>
+          <li><strong>Letter values</strong> use standard Scrabble letter points.</li>
+          <li><strong>Word multipliers</strong> combine if a word covers more than one multiplier space (example: <strong>DW</strong> + <strong>TW</strong> = <strong>5×</strong> total word multiplier).</li>
+          <li><strong>Two-letter words</strong> formed by valid adjacency add their points to your turn score.</li>
+          <li><strong>Challenge rule</strong>: if challenged and the word is invalid, the player loses their turn.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Game End & Final Scoring</h2>
+        <p>The game ends when all tiles have been drawn and a player uses their last tile, or when no more valid moves can be made.</p>
+        <p>The player with the highest score wins.</p>
+      </section>
+
+      <section>
+        <h2>Board Layout</h2>
+        <p class="small">Board layout image placeholder (add your board image here if you want it displayed).</p>
+        <!-- If you want, paste an <img> here or embed a base64 PNG. -->
+      </section>
+    </main>
+
+    <footer>
+      Scores are in-memory only — close the page and they reset.
+    </footer>
+  </div>
+
+  <script>
+    // In-memory only scorekeeper. No max player limit; starts with 2.
+    const state = {
+      players: [
+        { name: 'Player 1', total: 0, history: [] },
+        { name: 'Player 2', total: 0, history: [] },
+      ]
+    };
+
+    const elPlayers = document.getElementById('players');
+    const addBtn = document.getElementById('addPlayerBtn');
+    const removeBtn = document.getElementById('removePlayerBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function formatDelta(n) {
+      return `${n >= 0 ? '+' : ''}${n}`;
+    }
+
+    function render() {
+      elPlayers.innerHTML = '';
+
+      state.players.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'player';
+        card.dataset.index = String(idx);
+
+        const nameInput = document.createElement('input');
+        nameInput.className = 'player-name';
+        nameInput.type = 'text';
+        nameInput.value = p.name;
+        nameInput.placeholder = `Player ${idx + 1}`;
+        nameInput.addEventListener('input', (e) => {
+          state.players[idx].name = e.target.value;
+        });
+
+        const total = document.createElement('div');
+        total.className = 'total';
+        total.textContent = String(p.total);
+
+        const deltaRow = document.createElement('div');
+        deltaRow.className = 'delta-row';
+
+        const delta = document.createElement('input');
+        delta.className = 'delta';
+        delta.type = 'text';
+        delta.inputMode = 'numeric';
+        delta.placeholder = '+24';
+
+        const actionWrap = document.createElement('div');
+        actionWrap.className = 'delta-actions';
+
+        const add = document.createElement('button');
+        add.className = 'btn';
+        add.type = 'button';
+        add.textContent = 'Add';
+
+        const undo = document.createElement('button');
+        undo.className = 'btn btn-ghost';
+        undo.type = 'button';
+        undo.textContent = 'Undo';
+
+        function applyDelta() {
+          const raw = delta.value.trim();
+          if (!raw) return;
+
+          const n = Number(raw);
+          if (!Number.isFinite(n)) {
+            delta.value = '';
+            delta.placeholder = 'Enter a number';
+            return;
+          }
+
+          state.players[idx].total += n;
+          state.players[idx].history.unshift({
+            at: new Date(),
+            delta: n,
+            total: state.players[idx].total,
+          });
+
+          delta.value = '';
+          render();
+        }
+
+        add.addEventListener('click', applyDelta);
+        delta.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') applyDelta();
+        });
+
+        undo.addEventListener('click', () => {
+          const item = state.players[idx].history.shift();
+          if (!item) return;
+          state.players[idx].total -= item.delta;
+          render();
+        });
+
+        deltaRow.appendChild(delta);
+        actionWrap.appendChild(add);
+        actionWrap.appendChild(undo);
+        deltaRow.appendChild(actionWrap);
+
+        const hist = document.createElement('div');
+        hist.className = 'history';
+
+        const histTitle = document.createElement('div');
+        histTitle.className = 'small';
+        histTitle.style.marginBottom = '6px';
+        histTitle.textContent = 'Recent changes';
+        hist.appendChild(histTitle);
+
+        if (p.history.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'small';
+          empty.textContent = 'No entries yet.';
+          hist.appendChild(empty);
+        } else {
+          p.history.slice(0, 12).forEach(h => {
+            const row = document.createElement('div');
+            row.className = 'history-item';
+
+            const left = document.createElement('div');
+            left.textContent = formatDelta(h.delta);
+
+            const right = document.createElement('div');
+            const t = new Date(h.at);
+            right.textContent = `${t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} → ${h.total}`;
+
+            row.appendChild(left);
+            row.appendChild(right);
+            hist.appendChild(row);
+          });
+        }
+
+        card.appendChild(nameInput);
+        card.appendChild(total);
+        card.appendChild(deltaRow);
+        card.appendChild(hist);
+
+        elPlayers.appendChild(card);
+      });
+
+      removeBtn.disabled = state.players.length <= 1;
+    }
+
+    addBtn.addEventListener('click', () => {
+      state.players.push({
+        name: `Player ${state.players.length + 1}`,
+        total: 0,
+        history: []
+      });
+      render();
+    });
+
+    removeBtn.addEventListener('click', () => {
+      if (state.players.length <= 1) return;
+      state.players.pop();
+      render();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      state.players.forEach(p => {
+        p.total = 0;
+        p.history = [];
+      });
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

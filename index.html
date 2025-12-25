@@ -199,7 +199,7 @@
 
     .delta-wrap {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr auto;
       gap: 8px;
       align-items: center;
     }
@@ -207,6 +207,16 @@
     .sign-btn {
       min-width: 44px;
       font-weight: 700;
+    }
+
+    /* Hide native number steppers in browsers that show them */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
     }
 
     .delta {
@@ -436,13 +446,22 @@
 
         const delta = document.createElement('input');
         delta.className = 'delta';
-        delta.type = 'number';
-        delta.inputMode = 'decimal'; // number type on iOS shows digits plus minus/decimal
-        delta.step = '1';
+        delta.type = 'text';
+        delta.inputMode = 'numeric'; // numeric keypad plus our ± toggle for negatives on iOS
         delta.placeholder = '+24 or -10';
 
-        const actionWrap = document.createElement('div');
-        actionWrap.className = 'delta-actions';
+        const deltaWrap = document.createElement('div');
+        deltaWrap.className = 'delta-wrap';
+
+        const minusBtn = document.createElement('button');
+        minusBtn.className = 'btn btn-ghost sign-btn';
+        minusBtn.type = 'button';
+        minusBtn.textContent = '-';
+
+        const plusBtn = document.createElement('button');
+        plusBtn.className = 'btn btn-ghost sign-btn';
+        plusBtn.type = 'button';
+        plusBtn.textContent = '+';
 
         const add = document.createElement('button');
         add.className = 'btn';
@@ -488,7 +507,28 @@
           render();
         });
 
-        deltaRow.appendChild(delta);
+        minusBtn.addEventListener('click', () => {
+          const val = delta.value.trim();
+          delta.value = val.startsWith('-') ? val : `-${val}`;
+          delta.focus();
+          delta.setSelectionRange(delta.value.length, delta.value.length);
+        });
+
+        plusBtn.addEventListener('click', () => {
+          const val = delta.value.trim();
+          delta.value = val.startsWith('-') ? val.slice(1) : val;
+          delta.focus();
+          delta.setSelectionRange(delta.value.length, delta.value.length);
+        });
+
+        deltaWrap.appendChild(minusBtn);
+        deltaWrap.appendChild(delta);
+        deltaWrap.appendChild(plusBtn);
+
+        deltaRow.appendChild(deltaWrap);
+
+        const actionWrap = document.createElement('div');
+        actionWrap.className = 'delta-actions';
         actionWrap.appendChild(add);
         actionWrap.appendChild(undo);
         deltaRow.appendChild(actionWrap);

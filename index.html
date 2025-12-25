@@ -425,8 +425,9 @@
         const delta = document.createElement('input');
         delta.className = 'delta';
         delta.type = 'text';
-        delta.inputMode = 'numeric';
-        delta.placeholder = '+24';
+        delta.inputMode = 'decimal'; // iOS decimal keypad includes the minus sign
+        delta.pattern = '-?[0-9]*';
+        delta.placeholder = '+24 or -10';
 
         const actionWrap = document.createElement('div');
         actionWrap.className = 'delta-actions';

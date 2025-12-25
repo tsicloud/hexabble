@@ -24,6 +24,11 @@
       line-height: 1.45;
     }
 
+    /* Ensure padding/borders stay inside element width */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     .page {
       max-width: 980px;
       margin: 20px auto;

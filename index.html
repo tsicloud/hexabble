@@ -193,6 +193,7 @@
     .delta-row {
       display: grid;
       grid-template-columns: 1fr;
+      grid-auto-flow: row;
       gap: 8px;
       align-items: center;
     }
@@ -452,15 +453,10 @@
         const deltaWrap = document.createElement('div');
         deltaWrap.className = 'delta-wrap';
 
-        const minusBtn = document.createElement('button');
-        minusBtn.className = 'btn btn-ghost sign-btn';
-        minusBtn.type = 'button';
-        minusBtn.textContent = '-';
-
-        const plusBtn = document.createElement('button');
-        plusBtn.className = 'btn btn-ghost sign-btn';
-        plusBtn.type = 'button';
-        plusBtn.textContent = '+';
+        const signToggle = document.createElement('button');
+        signToggle.className = 'btn btn-ghost sign-btn';
+        signToggle.type = 'button';
+        signToggle.textContent = '+/-';
 
         const add = document.createElement('button');
         add.className = 'btn';
@@ -506,23 +502,21 @@
           render();
         });
 
-        minusBtn.addEventListener('click', () => {
+        signToggle.addEventListener('click', () => {
           const val = delta.value.trim();
-          delta.value = val.startsWith('-') ? val : `-${val}`;
+          if (!val) {
+            delta.value = '-';
+          } else if (val.startsWith('-')) {
+            delta.value = val.slice(1);
+          } else {
+            delta.value = `-${val}`;
+          }
           delta.focus();
           delta.setSelectionRange(delta.value.length, delta.value.length);
         });
 
-        plusBtn.addEventListener('click', () => {
-          const val = delta.value.trim();
-          delta.value = val.startsWith('-') ? val.slice(1) : val;
-          delta.focus();
-          delta.setSelectionRange(delta.value.length, delta.value.length);
-        });
-
-        deltaWrap.appendChild(minusBtn);
+        deltaWrap.appendChild(signToggle);
         deltaWrap.appendChild(delta);
-        deltaWrap.appendChild(plusBtn);
 
         deltaRow.appendChild(deltaWrap);
 
